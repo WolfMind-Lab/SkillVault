@@ -1,42 +1,35 @@
 let courses = JSON.parse(localStorage.getItem("courses")) || [];
 let events = JSON.parse(localStorage.getItem("events")) || [];
 
-/* CREAZIONE CORSO */
+/* CREAZIONE CORSO CON REGOLE */
 function addCourse() {
   let name = document.getElementById("courseName").value;
   let total = Number(document.getElementById("totalHours").value);
 
-  if (!name) return;
+  if (!name || !total) return;
 
   courses.push({
     name,
-    total,
-    done: 0,
-    absent: 0
+    totalHours: total,
+
+    doneHours: 0,
+    absentHours: 0,
+
+    tolerancePercent: 20, // tolleranza standard 20%
   });
 
   save();
   renderAll();
 }
 
-/* SELECT */
-function updateSelect() {
-  let select = document.getElementById("courseSelect");
-  select.innerHTML = "";
-
-  courses.forEach((c, i) => {
-    select.innerHTML += `<option value="${i}">${c.name}</option>`;
-  });
-}
-
-/* PRESENZA */
+/* ORE LEZIONE */
 function present() {
   let id = document.getElementById("courseSelect").value;
   let h = Number(document.getElementById("hours").value);
 
-  if (!courses[id]) return;
+  if (!courses[id] || !h) return;
 
-  courses[id].done += h;
+  courses[id].doneHours += h;
 
   save();
   renderAll();
@@ -47,12 +40,71 @@ function absent() {
   let id = document.getElementById("courseSelect").value;
   let h = Number(document.getElementById("hours").value);
 
-  if (!courses[id]) return;
+  if (!courses[id] || !h) return;
 
-  courses[id].absent += h;
+  courses[id].absentHours += h;
 
   save();
   renderAll();
+}
+
+/* PROMEMORIA REGOLE */
+function getRules(course) {
+  let maxAbsence = course.totalHours * (course.tolerancePercent / 100);
+  let usedAbsence = course.absentHours;
+
+  if (usedAbsence > maxAbsence) {
+    return "🔴 FUORI LIMITE ASSENZE";
+  }
+
+  if (usedAbsence > maxAbsence * 0.7) {
+    return "🟡 ATTENZIONE: quasi limite assenze";
+  }
+
+  return "🟢 In regola";
+}
+
+/* RENDER CORSI */
+function renderCourses() {
+  let box = document.getElementById("courses");
+  box.innerHTML = "";
+
+  courses.forEach((c) => {
+
+    let completed = c.doneHours;
+    let absent = c.absentHours;
+    let total = c.totalHours;
+
+    let progress = ((completed / total) * 100).toFixed(1);
+
+    let maxAbsence = total * (c.tolerancePercent / 100);
+
+    box.innerHTML += `
+      <div class="item">
+        <b>${c.name}</b><br><br>
+
+        📌 Ore totali: ${total}<br>
+        ✅ Frequentate: ${completed}<br>
+        ❌ Assenze: ${absent}<br><br>
+
+        📊 Avanzamento: ${progress}%<br>
+
+        ⚖️ Tolleranza assenze: ${c.tolerancePercent}% (${maxAbsence} ore)<br><br>
+
+        🚨 Stato: ${getRules(c)}
+      </div>
+    `;
+  });
+}
+
+/* SELECT CORSI */
+function updateSelect() {
+  let select = document.getElementById("courseSelect");
+  select.innerHTML = "";
+
+  courses.forEach((c, i) => {
+    select.innerHTML += `<option value="${i}">${c.name}</option>`;
+  });
 }
 
 /* CALENDARIO */
@@ -69,40 +121,6 @@ function addEvent() {
   renderAll();
 }
 
-/* RENDER */
-function renderCourses() {
-  let box = document.getElementById("courses");
-  box.innerHTML = "";
-
-  courses.forEach(c => {
-    let percent = ((c.done / c.total) * 100).toFixed(1);
-
-    box.innerHTML += `
-      <div class="item">
-        <b>${c.name}</b><br>
-        Ore: ${c.done}/${c.total}<br>
-        Assenze: ${c.absent}<br>
-        Avanzamento: ${percent}%
-      </div>
-    `;
-  });
-}
-
-function renderCalendar() {
-  let box = document.getElementById("calendar");
-  if (!box) return;
-
-  box.innerHTML = "";
-
-  events.forEach(e => {
-    box.innerHTML += `
-      <div class="item">
-        📅 ${e.date} - ${e.text}
-      </div>
-    `;
-  });
-}
-
 /* SAVE */
 function save() {
   localStorage.setItem("courses", JSON.stringify(courses));
@@ -112,7 +130,6 @@ function save() {
 /* INIT */
 function renderAll() {
   renderCourses();
-  renderCalendar();
   updateSelect();
 }
 
