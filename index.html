@@ -9,17 +9,17 @@
 <body>
 
 <header>
-  <h1>🏫 Ecosistema Educativo</h1>
+  <h1>🏛️ Ecosistema Educativo & Professionale</h1>
 </header>
 
 <div class="container">
 
   <!-- IDENTITÀ -->
   <section class="card">
-    <h2>🧭 Identità</h2>
+    <h2>🧭 Profilo</h2>
 
-    <input id="userName" placeholder="Nome">
-    <input id="userGoal" placeholder="Obiettivo">
+    <input id="userName" placeholder="Nome e cognome">
+    <input id="userGoal" placeholder="Obiettivo professionale">
 
     <button onclick="saveProfile()">Salva profilo</button>
 
@@ -28,7 +28,7 @@
 
   <!-- PERCORSI -->
   <section class="card">
-    <h2>🎓 Percorso educativo</h2>
+    <h2>🎓 Percorsi educativi</h2>
 
     <input id="pathName" placeholder="Nome percorso">
 
@@ -36,11 +36,11 @@
       <option>Scuola</option>
       <option>Università</option>
       <option>Master</option>
-      <option>Corso</option>
-      <option>Altro</option>
+      <option>Corso professionale</option>
+      <option>Autoformazione</option>
     </select>
 
-    <button onclick="addPath()">Crea percorso</button>
+    <button onclick="addPath()">Aggiungi percorso</button>
 
     <div id="paths"></div>
   </section>
@@ -60,7 +60,7 @@
 
   <!-- REGISTRO -->
   <section class="card">
-    <h2>📅 Registro</h2>
+    <h2>📅 Registro presenze</h2>
 
     <select id="courseSelect"></select>
     <input id="hours" type="number" placeholder="Ore">
@@ -69,14 +69,37 @@
     <button onclick="addLog('absent')">❌ Assenza</button>
   </section>
 
-  <!-- OUTPUT -->
+  <!-- CALENDARIO -->
   <section class="card">
-    <h2>📊 Corsi</h2>
-    <div id="courses"></div>
+    <h2>📆 Calendario formazione</h2>
+
+    <input id="eventText" placeholder="Es: Lezione 09:00 - Informatica">
+
+    <button onclick="addEvent()">Aggiungi evento</button>
+
+    <div id="calendar"></div>
   </section>
 
+  <!-- CV AUTOMATICO -->
   <section class="card">
-    <h2>🧾 Log</h2>
+    <h2>📄 CV automatico</h2>
+
+    <button onclick="generateCV()">Genera CV</button>
+
+    <div id="cv"></div>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section class="card">
+    <h2>💼 Portfolio professionale</h2>
+    <div id="portfolio"></div>
+  </section>
+
+  <!-- OUTPUT SISTEMA -->
+  <section class="card">
+    <h2>📊 Sistema educativo</h2>
+    <div id="paths"></div>
+    <div id="courses"></div>
     <div id="logs"></div>
   </section>
 
