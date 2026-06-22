@@ -2,86 +2,106 @@ let courses = JSON.parse(localStorage.getItem("courses")) || [];
 let events = JSON.parse(localStorage.getItem("events")) || [];
 let files = JSON.parse(localStorage.getItem("files")) || [];
 
-// SALVA CORSO
-function addCourse() {
-    let name = document.getElementById("courseName").value;
-    let total = document.getElementById("hoursTotal").value;
-    let done = document.getElementById("hoursDone").value;
+/* NAVIGATION */
+function showSection(id) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 
-    if (!name) return alert("Inserisci nome corso");
-
-    let course = {
-        name,
-        total: parseInt(total),
-        done: parseInt(done),
-        missing: parseInt(total) - parseInt(done)
-    };
-
-    courses.push(course);
-    localStorage.setItem("courses", JSON.stringify(courses));
-
-    renderCourses();
+    renderAll();
 }
 
-// MOSTRA CORSI
-function renderCourses() {
-    let list = document.getElementById("courseList");
-    list.innerHTML = "";
+/* COURSES */
+function addCourse() {
+    let name = document.getElementById("courseName").value;
+    let total = Number(document.getElementById("hoursTotal").value);
+    let done = Number(document.getElementById("hoursDone").value);
 
-    courses.forEach((c, i) => {
-        list.innerHTML += `
-        <div class="course">
+    if (!name) return;
+
+    courses.push({ name, total, done });
+    save();
+    renderCourses();
+    renderDashboard();
+}
+
+function renderCourses() {
+    let box = document.getElementById("courseList");
+    box.innerHTML = "";
+
+    courses.forEach(c => {
+        box.innerHTML += `
+        <div class="item">
             <b>${c.name}</b><br>
-            Ore totali: ${c.total}<br>
-            Frequentate: ${c.done}<br>
-            Mancanti: ${c.missing}
+            Ore: ${c.done}/${c.total}
         </div>`;
     });
 }
 
-// EVENTI CALENDARIO
+/* EVENTS */
 function addEvent() {
     let text = document.getElementById("eventText").value;
     if (!text) return;
 
     events.push(text);
-    localStorage.setItem("events", JSON.stringify(events));
-
+    save();
     renderEvents();
 }
 
 function renderEvents() {
-    let list = document.getElementById("eventList");
-    list.innerHTML = "";
+    let box = document.getElementById("eventList");
+    if (!box) return;
 
+    box.innerHTML = "";
     events.forEach(e => {
-        list.innerHTML += `<div class="event">📌 ${e}</div>`;
+        box.innerHTML += `<div class="item">📅 ${e}</div>`;
     });
 }
 
-// UPLOAD FILE (SIMULAZIONE SCANNER)
+/* FILES */
 function uploadFile() {
-    let fileInput = document.getElementById("fileInput");
-    let file = fileInput.files[0];
-
+    let file = document.getElementById("fileInput").files[0];
     if (!file) return;
 
     files.push(file.name);
-    localStorage.setItem("files", JSON.stringify(files));
-
+    save();
     renderFiles();
 }
 
 function renderFiles() {
-    let list = document.getElementById("fileList");
-    list.innerHTML = "";
+    let box = document.getElementById("fileList");
+    box.innerHTML = "";
 
     files.forEach(f => {
-        list.innerHTML += `<div class="event">📄 ${f}</div>`;
+        box.innerHTML += `<div class="item">📄 ${f}</div>`;
     });
 }
 
-// INIT
-renderCourses();
-renderEvents();
-renderFiles();
+/* DASHBOARD */
+function renderDashboard() {
+    let totalCourses = courses.length;
+    let totalHours = courses.reduce((a, c) => a + c.total, 0);
+    let doneHours = courses.reduce((a, c) => a + c.done, 0);
+
+    document.getElementById("stats").innerHTML = `
+        <div class="item">🎓 Corsi: ${totalCourses}</div>
+        <div class="item">⏱ Ore totali: ${totalHours}</div>
+        <div class="item">✅ Ore frequentate: ${doneHours}</div>
+    `;
+}
+
+/* SAVE */
+function save() {
+    localStorage.setItem("courses", JSON.stringify(courses));
+    localStorage.setItem("events", JSON.stringify(events));
+    localStorage.setItem("files", JSON.stringify(files));
+}
+
+/* INIT */
+function renderAll() {
+    renderCourses();
+    renderEvents();
+    renderFiles();
+    renderDashboard();
+}
+
+renderAll();
