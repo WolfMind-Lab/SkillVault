@@ -1,105 +1,111 @@
 let courses = JSON.parse(localStorage.getItem("courses")) || [];
 let events = JSON.parse(localStorage.getItem("events")) || [];
 
-/* CREAZIONE CORSO CON REGOLE */
+/* =========================
+   CREA CORSO
+========================= */
 function addCourse() {
-  let name = document.getElementById("courseName").value;
-  let total = Number(document.getElementById("totalHours").value);
+  const name = document.getElementById("courseName").value;
+  const total = Number(document.getElementById("totalHours").value);
 
-  if (!name || !total) return;
+  if (!name || total <= 0) return;
 
   courses.push({
-    name,
+    name: name,
     totalHours: total,
-
     doneHours: 0,
     absentHours: 0,
-
-    tolerancePercent: 20, // tolleranza standard 20%
+    tolerancePercent: 20
   });
 
   save();
   renderAll();
 }
 
-/* ORE LEZIONE */
+/* =========================
+   PRESENZA
+========================= */
 function present() {
-  let id = document.getElementById("courseSelect").value;
-  let h = Number(document.getElementById("hours").value);
+  const id = document.getElementById("courseSelect").value;
+  const hours = Number(document.getElementById("hours").value);
 
-  if (!courses[id] || !h) return;
+  if (!courses[id] || hours <= 0) return;
 
-  courses[id].doneHours += h;
+  courses[id].doneHours += hours;
 
   save();
   renderAll();
 }
 
-/* ASSENZA */
+/* =========================
+   ASSENZA
+========================= */
 function absent() {
-  let id = document.getElementById("courseSelect").value;
-  let h = Number(document.getElementById("hours").value);
+  const id = document.getElementById("courseSelect").value;
+  const hours = Number(document.getElementById("hours").value);
 
-  if (!courses[id] || !h) return;
+  if (!courses[id] || hours <= 0) return;
 
-  courses[id].absentHours += h;
+  courses[id].absentHours += hours;
 
   save();
   renderAll();
 }
 
-/* PROMEMORIA REGOLE */
-function getRules(course) {
-  let maxAbsence = course.totalHours * (course.tolerancePercent / 100);
-  let usedAbsence = course.absentHours;
+/* =========================
+   REGOLE
+========================= */
+function getStatus(c) {
+  const total = c.totalHours || 0;
+  const absent = c.absentHours || 0;
+  const tolerance = c.tolerancePercent || 20;
 
-  if (usedAbsence > maxAbsence) {
-    return "🔴 FUORI LIMITE ASSENZE";
-  }
+  const maxAbsence = total * (tolerance / 100);
 
-  if (usedAbsence > maxAbsence * 0.7) {
-    return "🟡 ATTENZIONE: quasi limite assenze";
-  }
-
+  if (absent > maxAbsence) return "🔴 Fuori limite assenze";
+  if (absent > maxAbsence * 0.7) return "🟡 Attenzione assenze";
   return "🟢 In regola";
 }
 
-/* RENDER CORSI */
+/* =========================
+   RENDER CORSI
+========================= */
 function renderCourses() {
-  let box = document.getElementById("courses");
+  const box = document.getElementById("courses");
   box.innerHTML = "";
 
   courses.forEach((c) => {
+    const total = c.totalHours || 0;
+    const done = c.doneHours || 0;
+    const absent = c.absentHours || 0;
+    const tolerance = c.tolerancePercent || 20;
 
-    let completed = c.doneHours;
-    let absent = c.absentHours;
-    let total = c.totalHours;
-
-    let progress = ((completed / total) * 100).toFixed(1);
-
-    let maxAbsence = total * (c.tolerancePercent / 100);
+    const progress = total > 0 ? ((done / total) * 100).toFixed(1) : 0;
+    const maxAbsence = total * (tolerance / 100);
 
     box.innerHTML += `
       <div class="item">
         <b>${c.name}</b><br><br>
 
         📌 Ore totali: ${total}<br>
-        ✅ Frequentate: ${completed}<br>
+        ✅ Frequentate: ${done}<br>
         ❌ Assenze: ${absent}<br><br>
 
         📊 Avanzamento: ${progress}%<br>
 
-        ⚖️ Tolleranza assenze: ${c.tolerancePercent}% (${maxAbsence} ore)<br><br>
+        ⚖️ Tolleranza: ${tolerance}% (${maxAbsence} ore)<br><br>
 
-        🚨 Stato: ${getRules(c)}
+        🚨 Stato: ${getStatus(c)}
       </div>
     `;
   });
 }
 
-/* SELECT CORSI */
+/* =========================
+   SELECT CORSI
+========================= */
 function updateSelect() {
-  let select = document.getElementById("courseSelect");
+  const select = document.getElementById("courseSelect");
   select.innerHTML = "";
 
   courses.forEach((c, i) => {
@@ -107,9 +113,12 @@ function updateSelect() {
   });
 }
 
-/* CALENDARIO */
+/* =========================
+   CALENDARIO
+========================= */
 function addEvent() {
-  let text = document.getElementById("eventText").value;
+  const text = document.getElementById("eventText").value;
+
   if (!text) return;
 
   events.push({
@@ -121,16 +130,36 @@ function addEvent() {
   renderAll();
 }
 
-/* SAVE */
+function renderEvents() {
+  const box = document.getElementById("calendar");
+  if (!box) return;
+
+  box.innerHTML = "";
+
+  events.forEach((e) => {
+    box.innerHTML += `
+      <div class="item">
+        📅 ${e.date} - ${e.text}
+      </div>
+    `;
+  });
+}
+
+/* =========================
+   SALVATAGGIO
+========================= */
 function save() {
   localStorage.setItem("courses", JSON.stringify(courses));
   localStorage.setItem("events", JSON.stringify(events));
 }
 
-/* INIT */
+/* =========================
+   INIT
+========================= */
 function renderAll() {
   renderCourses();
   updateSelect();
+  renderEvents();
 }
 
 renderAll();
