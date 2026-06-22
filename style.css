@@ -6,9 +6,9 @@ body {
 }
 
 header {
-  background: #111827;
   text-align: center;
   padding: 20px;
+  background: #111827;
 }
 
 .container {
@@ -28,8 +28,8 @@ input, select {
   width: 100%;
   padding: 10px;
   margin: 5px 0;
-  border-radius: 6px;
   border: none;
+  border-radius: 6px;
   background: #111827;
   color: white;
 }
@@ -41,8 +41,6 @@ button {
   border-radius: 6px;
   background: #2563eb;
   color: white;
-  cursor: pointer;
-  margin-top: 5px;
 }
 
 button:hover {
