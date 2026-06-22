@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillVault</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>📚 SkillVault</h1>
+    <p>Il tuo archivio personale di formazione</p>
+</header>
+
+<div class="container">
+
+    <!-- FORM AGGIUNTA CORSO -->
+    <section class="card">
+        <h2>➕ Aggiungi Corso</h2>
+
+        <input id="courseName" placeholder="Nome corso">
+        <input id="hoursTotal" type="number" placeholder="Ore totali">
+        <input id="hoursDone" type="number" placeholder="Ore frequentate">
+
+        <button onclick="addCourse()">Salva Corso</button>
+    </section>
+
+    <!-- UPLOAD DOCUMENTO -->
+    <section class="card">
+        <h2>📤 Carica Documento (Scanner simulato)</h2>
+        <input type="file" id="fileInput">
+        <button onclick="uploadFile()">Carica</button>
+        <div id="fileList"></div>
+    </section>
+
+    <!-- LISTA CORSI -->
+    <section class="card">
+        <h2>📊 I tuoi corsi</h2>
+        <div id="courseList"></div>
+    </section>
+
+    <!-- CALENDARIO SEMPLICE -->
+    <section class="card">
+        <h2>📅 Calendario giornaliero</h2>
+
+        <input id="eventText" placeholder="Es: Corso informatica 09-13">
+        <button onclick="addEvent()">Aggiungi evento</button>
+
+        <div id="eventList"></div>
+    </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
