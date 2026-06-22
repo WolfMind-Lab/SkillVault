@@ -1,79 +1,124 @@
 let courses = JSON.parse(localStorage.getItem("courses")) || [];
-let files = JSON.parse(localStorage.getItem("files")) || [];
+let events = JSON.parse(localStorage.getItem("events")) || [];
 
-/* AGGIUNGI CORSO */
+/* CREA CORSO */
 function addCourse() {
-
-  let name = document.getElementById("name").value;
-  let total = Number(document.getElementById("total").value);
-  let done = Number(document.getElementById("done").value);
-  let limit = Number(document.getElementById("absenceLimit").value);
+  let name = document.getElementById("courseName").value;
+  let total = Number(document.getElementById("totalHours").value);
 
   if (!name) return;
-
-  let absence = total - done;
-
-  let status = "🟢 In regola";
-
-  if (absence > limit) {
-    status = "🔴 Fuori limite assenze";
-  } else if (absence > limit * 0.7) {
-    status = "🟡 Attenzione assenze";
-  }
 
   courses.push({
     name,
     total,
-    done,
-    absence,
-    limit,
-    status
+    done: 0,
+    absent: 0
   });
 
   save();
-  render();
+  renderCourses();
+  renderSelect();
 }
 
-/* RENDER */
-function render() {
+/* SELECT CORSI */
+function renderSelect() {
+  let select = document.getElementById("courseSelect");
+  select.innerHTML = "";
 
-  let list = document.getElementById("list");
-  list.innerHTML = "";
+  courses.forEach((c, i) => {
+    select.innerHTML += `<option value="${i}">${c.name}</option>`;
+  });
+}
+
+/* PRESENZA */
+function markPresent() {
+  let id = document.getElementById("courseSelect").value;
+  let hours = Number(document.getElementById("lessonHours").value);
+
+  if (!courses[id] || !hours) return;
+
+  courses[id].done += hours;
+
+  save();
+  renderCourses();
+}
+
+/* ASSENZA */
+function markAbsent() {
+  let id = document.getElementById("courseSelect").value;
+  let hours = Number(document.getElementById("lessonHours").value);
+
+  if (!courses[id] || !hours) return;
+
+  courses[id].absent += hours;
+
+  save();
+  renderCourses();
+}
+
+/* CALENDARIO */
+function addEvent() {
+  let text = document.getElementById("eventText").value;
+  if (!text) return;
+
+  events.push({
+    text,
+    date: new Date().toLocaleDateString()
+  });
+
+  save();
+  renderCalendar();
+}
+
+/* RENDER CORSI */
+function renderCourses() {
+  let box = document.getElementById("courses");
+  box.innerHTML = "";
 
   courses.forEach(c => {
-    list.innerHTML += `
+
+    let percent = ((c.done / c.total) * 100).toFixed(1);
+
+    let status = "🟢 In regola";
+
+    if (c.done + c.absent > c.total) {
+      status = "🔴 Superato monte ore";
+    }
+
+    box.innerHTML += `
       <div class="item">
         <b>${c.name}</b><br>
-        Ore: ${c.done}/${c.total}<br>
-        Assenze: ${c.absence} / ${c.limit}<br>
-        Stato: ${c.status}
+        Totale: ${c.total} ore<br>
+        Frequentate: ${c.done}<br>
+        Assenze: ${c.absent}<br>
+        Completamento: ${percent}%<br>
+        Stato: ${status}
       </div>
     `;
   });
-
-  let f = document.getElementById("files");
-  f.innerHTML = "";
-
-  files.forEach(x => {
-    f.innerHTML += `<div class="item">📄 ${x}</div>`;
-  });
 }
 
-/* FILE */
-function addFile() {
-  let file = document.getElementById("file").files[0];
-  if (!file) return;
+/* CALENDARIO */
+function renderCalendar() {
+  let box = document.getElementById("calendar");
+  box.innerHTML = "";
 
-  files.push(file.name);
-  save();
-  render();
+  events.forEach(e => {
+    box.innerHTML += `
+      <div class="item">
+        📅 ${e.date} - ${e.text}
+      </div>
+    `;
+  });
 }
 
 /* SAVE */
 function save() {
   localStorage.setItem("courses", JSON.stringify(courses));
-  localStorage.setItem("files", JSON.stringify(files));
+  localStorage.setItem("events", JSON.stringify(events));
 }
 
 /* INIT */
-render();
+renderCourses();
+renderCalendar();
+renderSelect();
