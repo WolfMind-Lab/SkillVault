@@ -1,14 +1,14 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: #0f172a;
+  background: #0b1220;
   color: white;
 }
 
 header {
+  background: #111827;
   text-align: center;
   padding: 20px;
-  background: #111827;
 }
 
 .container {
@@ -24,12 +24,12 @@ header {
   border-radius: 10px;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 10px;
   margin: 5px 0;
-  border: none;
   border-radius: 6px;
+  border: none;
   background: #111827;
   color: white;
 }
@@ -42,6 +42,7 @@ button {
   background: #2563eb;
   color: white;
   cursor: pointer;
+  margin-top: 5px;
 }
 
 button:hover {
@@ -51,6 +52,6 @@ button:hover {
 .item {
   background: #111827;
   padding: 10px;
-  margin-top: 10px;
+  margin-top: 8px;
   border-radius: 6px;
 }
