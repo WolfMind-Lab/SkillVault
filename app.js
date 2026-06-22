@@ -1,21 +1,42 @@
-let classes = JSON.parse(localStorage.getItem("classes")) || [];
-let lessons = JSON.parse(localStorage.getItem("lessons")) || [];
+let paths = JSON.parse(localStorage.getItem("paths")) || [];
+let logs = JSON.parse(localStorage.getItem("logs")) || [];
 
 /* =========================
-   CREA CLASSE / CORSO
+   CREA PERCORSO EDUCATIVO
 ========================= */
-function addClass() {
-  const name = document.getElementById("courseName").value;
-  const totalHours = Number(document.getElementById("totalHours").value);
+function addPath() {
+  const name = document.getElementById("pathName").value;
+  const type = document.getElementById("educationType").value;
 
-  if (!name || totalHours <= 0) return;
+  if (!name || !type) return;
 
-  classes.push({
+  paths.push({
     name,
-    totalHours,
+    type,
+    courses: []
+  });
+
+  save();
+  renderAll();
+}
+
+/* =========================
+   CREA CORSO CON TOLLERANZA PERSONALIZZATA
+========================= */
+function addCourse() {
+  const pathId = document.getElementById("pathSelect").value;
+  const name = document.getElementById("courseName").value;
+  const total = Number(document.getElementById("totalHours").value);
+  const tolerance = Number(document.getElementById("tolerance").value);
+
+  if (!paths[pathId] || !name || total <= 0) return;
+
+  paths[pathId].courses.push({
+    name,
+    totalHours: total,
     doneHours: 0,
     absentHours: 0,
-    tolerance: 20
+    tolerancePercent: tolerance
   });
 
   save();
@@ -23,21 +44,28 @@ function addClass() {
 }
 
 /* =========================
-   REGISTRO LEZIONE (PRESENZA)
+   PRESENZA / ASSENZA
 ========================= */
-function present() {
-  const id = document.getElementById("courseSelect").value;
+function addLog(type) {
+  const pathId = document.getElementById("pathSelect").value;
+  const courseId = document.getElementById("courseSelect").value;
   const hours = Number(document.getElementById("hours").value);
 
-  if (!classes[id] || hours <= 0) return;
+  const course = paths[pathId]?.courses[courseId];
+  if (!course || hours <= 0) return;
 
-  classes[id].doneHours += hours;
+  if (type === "present") {
+    course.doneHours += hours;
+  } else {
+    course.absentHours += hours;
+  }
 
-  lessons.push({
-    classId: id,
-    type: "presenza",
+  logs.push({
+    date: new Date().toLocaleDateString(),
+    type,
     hours,
-    date: new Date().toLocaleDateString()
+    pathId,
+    courseId
   });
 
   save();
@@ -45,64 +73,70 @@ function present() {
 }
 
 /* =========================
-   REGISTRO ASSENZA
-========================= */
-function absent() {
-  const id = document.getElementById("courseSelect").value;
-  const hours = Number(document.getElementById("hours").value);
-
-  if (!classes[id] || hours <= 0) return;
-
-  classes[id].absentHours += hours;
-
-  lessons.push({
-    classId: id,
-    type: "assenza",
-    hours,
-    date: new Date().toLocaleDateString()
-  });
-
-  save();
-  renderAll();
-}
-
-/* =========================
-   CALCOLO STATO
+   STATO CORSO
 ========================= */
 function getStatus(c) {
-  const maxAbsence = c.totalHours * (c.tolerance / 100);
+  const maxAbs = c.totalHours * (c.tolerancePercent / 100);
 
-  if (c.absentHours > maxAbsence) return "🔴 NON AMMESSO";
-  if (c.absentHours > maxAbsence * 0.7) return "🟡 RISCHIO";
-  return "🟢 OK";
+  if (c.absentHours > maxAbs) return "🔴 ESCLUSO / NON AMMESSO";
+  if (c.absentHours > maxAbs * 0.7) return "🟡 RISCHIO";
+  return "🟢 REGOLARE";
 }
 
 /* =========================
-   RENDER CLASSI
+   RENDER PERCORSI
 ========================= */
-function renderClasses() {
-  const box = document.getElementById("courses");
+function renderPaths() {
+  const box = document.getElementById("paths");
+  const select = document.getElementById("pathSelect");
+
   box.innerHTML = "";
+  select.innerHTML = "";
 
-  classes.forEach((c) => {
+  paths.forEach((p, i) => {
 
-    const progress = c.totalHours > 0
-      ? ((c.doneHours / c.totalHours) * 100).toFixed(1)
-      : 0;
-
-    const maxAbsence = c.totalHours * (c.tolerance / 100);
+    select.innerHTML += `<option value="${i}">${p.name}</option>`;
 
     box.innerHTML += `
       <div class="item">
-        <b>🏫 ${c.name}</b><br><br>
+        <b>🎓 ${p.name}</b><br>
+        📚 Tipo: ${p.type}<br>
+        📦 Corsi: ${p.courses.length}
+      </div>
+    `;
+  });
+}
 
-        📌 Ore totali: ${c.totalHours}<br>
+/* =========================
+   RENDER CORSI
+========================= */
+function renderCourses() {
+  const pathId = document.getElementById("pathSelect").value;
+  const box = document.getElementById("courses");
+
+  box.innerHTML = "";
+
+  const courses = paths[pathId]?.courses || [];
+
+  courses.forEach((c, i) => {
+
+    const progress = c.totalHours
+      ? ((c.doneHours / c.totalHours) * 100).toFixed(1)
+      : 0;
+
+    const maxAbs = c.totalHours * (c.tolerancePercent / 100);
+
+    box.innerHTML += `
+      <div class="item">
+        <b>📘 ${c.name}</b><br><br>
+
+        📌 Totale: ${c.totalHours}<br>
         ✅ Frequentate: ${c.doneHours}<br>
         ❌ Assenze: ${c.absentHours}<br><br>
 
         📊 Avanzamento: ${progress}%<br>
 
-        ⚖️ Tolleranza: ${c.tolerance}% (${maxAbsence} ore)<br><br>
+        ⚖️ Tolleranza: ${c.tolerancePercent}% (${maxAbs}h)<br><br>
 
         🚨 Stato: ${getStatus(c)}
       </div>
@@ -111,54 +145,39 @@ function renderClasses() {
 }
 
 /* =========================
-   SELECT CLASSI
+   LOG REGISTRO
 ========================= */
-function updateSelect() {
-  const select = document.getElementById("courseSelect");
-  select.innerHTML = "";
-
-  classes.forEach((c, i) => {
-    select.innerHTML += `<option value="${i}">${c.name}</option>`;
-  });
-}
-
-/* =========================
-   RENDER REGISTRO
-========================= */
-function renderLessons() {
-  const box = document.getElementById("calendar");
+function renderLogs() {
+  const box = document.getElementById("logs");
   if (!box) return;
 
   box.innerHTML = "";
 
-  lessons.slice().reverse().forEach((l) => {
+  logs.slice().reverse().forEach(l => {
 
-    const className = classes[l.classId]?.name || "Classe eliminata";
+    const course = paths[l.pathId]?.courses[l.courseId];
 
     box.innerHTML += `
       <div class="item">
-        📅 ${l.date} - ${className}<br>
-        ${l.type === "presenza" ? "✔ Presenza" : "❌ Assenza"} - ${l.hours}h
+        📅 ${l.date} - ${course?.name || "corso"}<br>
+        ${l.type === "present" ? "✔ Presenza" : "❌ Assenza"} - ${l.hours}h
       </div>
     `;
   });
 }
 
 /* =========================
-   SALVATAGGIO
+   SAVE + INIT
 ========================= */
 function save() {
-  localStorage.setItem("classes", JSON.stringify(classes));
-  localStorage.setItem("lessons", JSON.stringify(lessons));
+  localStorage.setItem("paths", JSON.stringify(paths));
+  localStorage.setItem("logs", JSON.stringify(logs));
 }
 
-/* =========================
-   INIT
-========================= */
 function renderAll() {
-  renderClasses();
-  updateSelect();
-  renderLessons();
+  renderPaths();
+  renderCourses();
+  renderLogs();
 }
 
 renderAll();
