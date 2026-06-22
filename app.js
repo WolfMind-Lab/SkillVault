@@ -1,44 +1,37 @@
 let profile = JSON.parse(localStorage.getItem("profile")) || {};
 let paths = JSON.parse(localStorage.getItem("paths")) || [];
 let logs = JSON.parse(localStorage.getItem("logs")) || [];
-let calendar = JSON.parse(localStorage.getItem("calendar")) || [];
+
+/* =========================
+   UTILITY ID
+========================= */
+function uid() {
+  return Date.now() + Math.random().toString(16).slice(2);
+}
 
 /* =========================
    PROFILO
 ========================= */
 function saveProfile() {
   profile = {
-    name: document.getElementById("userName").value,
-    goal: document.getElementById("userGoal").value
+    name: userName.value,
+    goal: userGoal.value
   };
 
   save();
   renderAll();
 }
 
-function renderProfile() {
-  const box = document.getElementById("profile");
-
-  box.innerHTML = `
-    <div class="item">
-      👤 ${profile.name || "N/A"}<br>
-      🎯 ${profile.goal || "Nessun obiettivo"}
-    </div>
-  `;
-}
-
 /* =========================
-   PERCORSI
+   PATH
 ========================= */
 function addPath() {
-  const name = document.getElementById("pathName").value;
-  const type = document.getElementById("educationType").value;
-
-  if (!name) return;
+  if (!pathName.value) return;
 
   paths.push({
-    name,
-    type,
+    id: uid(),
+    name: pathName.value,
+    type: educationType.value,
     courses: []
   });
 
@@ -47,22 +40,20 @@ function addPath() {
 }
 
 /* =========================
-   CORSI
+   COURSE
 ========================= */
 function addCourse() {
-  const pathId = document.getElementById("pathSelect").value;
-  const name = document.getElementById("courseName").value;
-  const total = Number(document.getElementById("totalHours").value);
-  const tol = Number(document.getElementById("tolerance").value);
+  const path = paths.find(p => p.id === pathSelect.value);
+  if (!path) return;
 
-  if (!paths[pathId] || !name || total <= 0) return;
-
-  paths[pathId].courses.push({
-    name,
-    totalHours: total,
+  path.courses.push({
+    id: uid(),
+    name: courseName.value,
+    totalHours: Number(totalHours.value),
     doneHours: 0,
     absentHours: 0,
-    tolerance: tol
+    tolerance: Number(tolerance.value),
+    calendar: []
   });
 
   save();
@@ -70,25 +61,46 @@ function addCourse() {
 }
 
 /* =========================
-   REGISTRO
+   SELECT RENDER (SYNC SICURA)
+========================= */
+function renderSelects() {
+  pathSelect.innerHTML = "";
+  courseSelect.innerHTML = "";
+
+  paths.forEach(p => {
+    pathSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+  });
+
+  const path = paths.find(p => p.id === pathSelect.value);
+  if (!path) return;
+
+  path.courses.forEach(c => {
+    courseSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+  });
+}
+
+/* =========================
+   LOG PRESENZE
 ========================= */
 function addLog(type) {
-  const p = document.getElementById("pathSelect").value;
-  const c = document.getElementById("courseSelect").value;
-  const h = Number(document.getElementById("hours").value);
+  const path = paths.find(p => p.id === pathSelect.value);
+  if (!path) return;
 
-  const course = paths[p]?.courses[c];
-  if (!course || h <= 0) return;
+  const course = path.courses.find(c => c.id === courseSelect.value);
+  if (!course) return;
+
+  const h = Number(hours.value);
+  if (!h) return;
 
   if (type === "present") course.doneHours += h;
   else course.absentHours += h;
 
   logs.push({
+    id: uid(),
     date: new Date().toLocaleDateString(),
     type,
-    h,
-    p,
-    c
+    hours: h,
+    courseId: course.id
   });
 
   save();
@@ -96,20 +108,18 @@ function addLog(type) {
 }
 
 /* =========================
-   CALENDARIO (LEGATO AI CORSI)
+   CALENDAR (VERO, PER CORSO)
 ========================= */
 function addEvent() {
-  const p = document.getElementById("pathSelect").value;
-  const c = document.getElementById("courseSelect").value;
-  const text = document.getElementById("eventText").value;
+  const path = paths.find(p => p.id === pathSelect.value);
+  if (!path) return;
 
-  const course = paths[p]?.courses[c];
-  if (!course || !text) return;
-
-  if (!course.calendar) course.calendar = [];
+  const course = path.courses.find(c => c.id === courseSelect.value);
+  if (!course) return;
 
   course.calendar.push({
-    text,
+    id: uid(),
+    text: eventText.value,
     date: new Date().toLocaleDateString()
   });
 
@@ -117,23 +127,19 @@ function addEvent() {
   renderCalendar();
 }
 
+/* =========================
+   RENDER CALENDAR
+========================= */
 function renderCalendar() {
-  const p = document.getElementById("pathSelect").value;
-  const c = document.getElementById("courseSelect").value;
+  const path = paths.find(p => p.id === pathSelect.value);
+  const course = path?.courses.find(c => c.id === courseSelect.value);
 
-  const box = document.getElementById("calendar");
-  if (!box) return;
+  calendar.innerHTML = "";
 
-  box.innerHTML = "";
-
-  const course = paths[p]?.courses[c];
-  const list = course?.calendar || [];
-
-  list.forEach(e => {
-    box.innerHTML += `
+  (course?.calendar || []).forEach(e => {
+    calendar.innerHTML += `
       <div class="item">
         📅 ${e.date}<br>
-        📘 ${course.name}<br>
         ${e.text}
       </div>
     `;
@@ -141,154 +147,70 @@ function renderCalendar() {
 }
 
 /* =========================
-   CV AUTOMATICO (DINAMICO)
+   CV
 ========================= */
 function generateCV() {
-  const cv = document.getElementById("cv");
-
-  let html = `
+  cv.innerHTML = `
     <div class="item">
-      <h3>📄 Curriculum Vitae</h3>
+      <h3>📄 CV</h3>
       👤 ${profile.name || ""}<br>
       🎯 ${profile.goal || ""}<br><br>
-  `;
 
-  paths.forEach(p => {
-    html += `<b>${p.type} - ${p.name}</b><br>`;
-
-    p.courses.forEach(c => {
-      html += `
-        • ${c.name}<br>
-        └ ${c.doneHours}/${c.totalHours}h - ${c.absentHours} assenze<br>
-      `;
-    });
-
-    html += "<br>";
-  });
-
-  html += "</div>";
-
-  cv.innerHTML = html;
-}
-
-/* =========================
-   PORTFOLIO DINAMICO
-========================= */
-function renderPortfolio() {
-  const box = document.getElementById("portfolio");
-
-  let courses = 0;
-  let hours = 0;
-
-  paths.forEach(p => {
-    courses += p.courses.length;
-
-    p.courses.forEach(c => {
-      hours += c.doneHours;
-    });
-  });
-
-  box.innerHTML = `
-    <div class="item">
-      💼 <b>Portfolio professionale</b><br><br>
-      🎓 Percorsi: ${paths.length}<br>
-      📚 Corsi: ${courses}<br>
-      ⏱ Ore completate: ${hours}
+      ${paths.map(p => `
+        <b>${p.type} - ${p.name}</b><br>
+        ${p.courses.map(c => `
+          • ${c.name} (${c.doneHours}/${c.totalHours}h)
+        `).join("<br>")}
+        <br><br>
+      `).join("")}
     </div>
   `;
 }
 
 /* =========================
-   SELECT SINCRONIZZATI
+   PORTFOLIO
 ========================= */
-function renderPaths() {
-  const box = document.getElementById("paths");
-  const select = document.getElementById("pathSelect");
+function renderPortfolio() {
+  let totalCourses = 0;
+  let totalHours = 0;
 
-  box.innerHTML = "";
-  select.innerHTML = "";
-
-  paths.forEach((p, i) => {
-
-    select.innerHTML += `<option value="${i}">${p.name}</option>`;
-
-    box.innerHTML += `
-      <div class="item">
-        🎓 ${p.type} - ${p.name}
-      </div>
-    `;
+  paths.forEach(p => {
+    totalCourses += p.courses.length;
+    p.courses.forEach(c => totalHours += c.doneHours);
   });
 
-  renderCourses();
-  renderCalendar();
-}
-
-function renderCourses() {
-  const p = document.getElementById("pathSelect").value;
-  const select = document.getElementById("courseSelect");
-  const box = document.getElementById("courses");
-
-  select.innerHTML = "";
-  box.innerHTML = "";
-
-  const list = paths[p]?.courses || [];
-
-  list.forEach((c, i) => {
-
-    select.innerHTML += `<option value="${i}">${c.name}</option>`;
-
-    const maxAbs = c.totalHours * (c.tolerance / 100);
-
-    box.innerHTML += `
-      <div class="item">
-        📘 ${c.name}<br>
-        ✅ ${c.doneHours}h / ${c.totalHours}h<br>
-        ❌ Assenze: ${c.absentHours}<br>
-        ⚖️ Tolleranza: ${c.tolerance}% (${maxAbs}h)
-      </div>
-    `;
-  });
-
-  renderCalendar();
+  portfolio.innerHTML = `
+    <div class="item">
+      💼 Portfolio<br><br>
+      🎓 Percorsi: ${paths.length}<br>
+      📚 Corsi: ${totalCourses}<br>
+      ⏱ Ore: ${totalHours}
+    </div>
+  `;
 }
 
 /* =========================
-   LOGS
+   RENDER PRINCIPALE
 ========================= */
-function renderLogs() {
-  const box = document.getElementById("logs");
-
-  box.innerHTML = "";
-
-  logs.slice().reverse().forEach(l => {
-    const c = paths[l.p]?.courses[l.c];
-
-    box.innerHTML += `
-      <div class="item">
-        📅 ${l.date} - ${c?.name || ""}<br>
-        ${l.type === "present" ? "✔" : "❌"} ${l.h}h
-      </div>
-    `;
-  });
+function renderAll() {
+  renderSelects();
+  renderCalendar();
+  renderPortfolio();
 }
 
 /* =========================
-   SAVE + INIT
+   SAVE
 ========================= */
 function save() {
   localStorage.setItem("profile", JSON.stringify(profile));
   localStorage.setItem("paths", JSON.stringify(paths));
   localStorage.setItem("logs", JSON.stringify(logs));
-  localStorage.setItem("calendar", JSON.stringify(calendar));
 }
 
-function renderAll() {
-  renderProfile();
-  renderPaths();
-  renderCourses();
-  renderLogs();
-  renderPortfolio();
-  renderCalendar();
-}
+/* =========================
+   CHANGE HANDLER
+========================= */
+pathSelect?.addEventListener("change", renderAll);
+courseSelect?.addEventListener("change", renderAll);
 
 renderAll();
