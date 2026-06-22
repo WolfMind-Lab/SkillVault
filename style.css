@@ -1,61 +1,89 @@
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
-    background: #0f172a;
+    font-family: Arial;
+    background: #0b1220;
     color: white;
 }
 
-header {
-    text-align: center;
-    padding: 20px;
-    background: #1e293b;
+.app {
+    display: flex;
+    height: 100vh;
 }
 
-.container {
-    padding: 15px;
+/* SIDEBAR */
+.sidebar {
+    width: 220px;
+    background: #111a2e;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
+.sidebar button {
+    background: #1f2a44;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.sidebar button:hover {
+    background: #2b3a5f;
+}
+
+/* MAIN */
+.main {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+/* CARD */
 .card {
-    background: #1e293b;
+    background: #111a2e;
     padding: 15px;
     border-radius: 10px;
+    margin-bottom: 15px;
 }
 
 input {
     width: 100%;
     padding: 10px;
     margin: 5px 0;
-    border-radius: 5px;
+    border-radius: 6px;
     border: none;
+    background: #1f2a44;
+    color: white;
 }
 
 button {
     padding: 10px;
     width: 100%;
-    background: #38bdf8;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
+    background: #4f7cff;
+    color: white;
     cursor: pointer;
-    font-weight: bold;
 }
 
 button:hover {
-    background: #0ea5e9;
+    background: #3b66ff;
 }
 
-.course {
-    background: #334155;
+/* ELEMENTI LISTA */
+.item {
+    background: #1f2a44;
     padding: 10px;
+    border-radius: 8px;
     margin-top: 10px;
-    border-radius: 5px;
-}
-
-.event {
-    background: #334155;
-    padding: 8px;
-    margin-top: 5px;
-    border-radius: 5px;
 }
