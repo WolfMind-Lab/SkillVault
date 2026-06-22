@@ -9,38 +9,48 @@
 <body>
 
 <header>
-  <h1>📊 SkillVault Pro</h1>
-  <p>Gestionale formazione personale</p>
+  <h1>🏫 SkillVault Pro</h1>
+  <p>Portale formazione e registro presenze</p>
 </header>
 
 <div class="container">
 
   <!-- CORSO -->
   <section class="card">
-    <h2>🎓 Nuovo corso</h2>
+    <h2>🎓 Crea corso</h2>
 
-    <input id="name" placeholder="Nome corso">
-    <input id="total" type="number" placeholder="Ore totali">
-    <input id="done" type="number" placeholder="Ore frequentate">
-    <input id="absenceLimit" type="number" placeholder="Ore assenza massime">
+    <input id="courseName" placeholder="Nome corso">
+    <input id="totalHours" type="number" placeholder="Ore totali">
 
-    <button onclick="addCourse()">Salva corso</button>
+    <button onclick="addCourse()">Crea corso</button>
   </section>
 
-  <!-- LISTA -->
+  <!-- REGISTRO PRESENZE -->
   <section class="card">
-    <h2>📚 I tuoi corsi</h2>
-    <div id="list"></div>
+    <h2>📅 Registro presenze (oggi)</h2>
+
+    <select id="courseSelect"></select>
+
+    <input id="lessonHours" type="number" placeholder="Ore lezione oggi">
+
+    <button onclick="markPresent()">✔ Segna presenza</button>
+    <button onclick="markAbsent()">❌ Segna assenza</button>
   </section>
 
-  <!-- DOCUMENTI -->
+  <!-- CALENDARIO -->
   <section class="card">
-    <h2>📄 Documenti</h2>
+    <h2>📆 Calendario attività</h2>
 
-    <input type="file" id="file">
-    <button onclick="addFile()">Carica documento</button>
+    <input id="eventText" placeholder="Es: Lezione informatica 09:00-13:00">
+    <button onclick="addEvent()">Aggiungi evento</button>
 
-    <div id="files"></div>
+    <div id="calendar"></div>
+  </section>
+
+  <!-- CORSI -->
+  <section class="card">
+    <h2>📊 Stato corsi</h2>
+    <div id="courses"></div>
   </section>
 
 </div>
