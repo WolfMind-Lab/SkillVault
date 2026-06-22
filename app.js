@@ -12,8 +12,8 @@ function saveProfile() {
     goal: document.getElementById("userGoal").value
   };
 
-  localStorage.setItem("profile", JSON.stringify(profile));
-  renderProfile();
+  save();
+  renderAll();
 }
 
 function renderProfile() {
@@ -36,7 +36,11 @@ function addPath() {
 
   if (!name) return;
 
-  paths.push({ name, type, courses: [] });
+  paths.push({
+    name,
+    type,
+    courses: []
+  });
 
   save();
   renderAll();
@@ -51,7 +55,7 @@ function addCourse() {
   const total = Number(document.getElementById("totalHours").value);
   const tol = Number(document.getElementById("tolerance").value);
 
-  if (!paths[pathId] || !name) return;
+  if (!paths[pathId] || !name || total <= 0) return;
 
   paths[pathId].courses.push({
     name,
@@ -92,89 +96,110 @@ function addLog(type) {
 }
 
 /* =========================
-   CALENDARIO
+   CALENDARIO (LEGATO AI CORSI)
 ========================= */
 function addEvent() {
+  const p = document.getElementById("pathSelect").value;
+  const c = document.getElementById("courseSelect").value;
   const text = document.getElementById("eventText").value;
-  if (!text) return;
 
-  calendar.push({
+  const course = paths[p]?.courses[c];
+  if (!course || !text) return;
+
+  if (!course.calendar) course.calendar = [];
+
+  course.calendar.push({
     text,
     date: new Date().toLocaleDateString()
   });
 
-  localStorage.setItem("calendar", JSON.stringify(calendar));
+  save();
   renderCalendar();
 }
 
 function renderCalendar() {
+  const p = document.getElementById("pathSelect").value;
+  const c = document.getElementById("courseSelect").value;
+
   const box = document.getElementById("calendar");
   if (!box) return;
 
   box.innerHTML = "";
 
-  calendar.forEach(e => {
+  const course = paths[p]?.courses[c];
+  const list = course?.calendar || [];
+
+  list.forEach(e => {
     box.innerHTML += `
       <div class="item">
-        📅 ${e.date} - ${e.text}
+        📅 ${e.date}<br>
+        📘 ${course.name}<br>
+        ${e.text}
       </div>
     `;
   });
 }
 
 /* =========================
-   CV AUTOMATICO
+   CV AUTOMATICO (DINAMICO)
 ========================= */
 function generateCV() {
+  const cv = document.getElementById("cv");
+
   let html = `
     <div class="item">
       <h3>📄 Curriculum Vitae</h3>
-      <b>${profile.name || ""}</b><br>
-      Obiettivo: ${profile.goal || ""}<br><br>
-
-      <b>Formazione:</b><br>
+      👤 ${profile.name || ""}<br>
+      🎯 ${profile.goal || ""}<br><br>
   `;
 
   paths.forEach(p => {
-    html += `- ${p.type}: ${p.name}<br>`;
+    html += `<b>${p.type} - ${p.name}</b><br>`;
+
     p.courses.forEach(c => {
-      html += `  • ${c.name} (${c.doneHours}/${c.totalHours}h)<br>`;
+      html += `
+        • ${c.name}<br>
+        └ ${c.doneHours}/${c.totalHours}h - ${c.absentHours} assenze<br>
+      `;
     });
+
+    html += "<br>";
   });
 
   html += "</div>";
 
-  document.getElementById("cv").innerHTML = html;
+  cv.innerHTML = html;
 }
 
 /* =========================
-   PORTFOLIO
+   PORTFOLIO DINAMICO
 ========================= */
 function renderPortfolio() {
   const box = document.getElementById("portfolio");
 
-  let totalCourses = 0;
-  let totalHours = 0;
+  let courses = 0;
+  let hours = 0;
 
   paths.forEach(p => {
-    totalCourses += p.courses.length;
+    courses += p.courses.length;
+
     p.courses.forEach(c => {
-      totalHours += c.doneHours;
+      hours += c.doneHours;
     });
   });
 
   box.innerHTML = `
     <div class="item">
       💼 <b>Portfolio professionale</b><br><br>
-      📚 Percorsi: ${paths.length}<br>
-      📘 Corsi: ${totalCourses}<br>
-      ⏱ Ore completate: ${totalHours}
+      🎓 Percorsi: ${paths.length}<br>
+      📚 Corsi: ${courses}<br>
+      ⏱ Ore completate: ${hours}
     </div>
   `;
 }
 
 /* =========================
-   RENDER GENERALE
+   SELECT SINCRONIZZATI
 ========================= */
 function renderPaths() {
   const box = document.getElementById("paths");
@@ -184,6 +209,7 @@ function renderPaths() {
   select.innerHTML = "";
 
   paths.forEach((p, i) => {
+
     select.innerHTML += `<option value="${i}">${p.name}</option>`;
 
     box.innerHTML += `
@@ -192,17 +218,24 @@ function renderPaths() {
       </div>
     `;
   });
+
+  renderCourses();
+  renderCalendar();
 }
 
 function renderCourses() {
   const p = document.getElementById("pathSelect").value;
+  const select = document.getElementById("courseSelect");
   const box = document.getElementById("courses");
 
+  select.innerHTML = "";
   box.innerHTML = "";
 
   const list = paths[p]?.courses || [];
 
-  list.forEach(c => {
+  list.forEach((c, i) => {
+
+    select.innerHTML += `<option value="${i}">${c.name}</option>`;
 
     const maxAbs = c.totalHours * (c.tolerance / 100);
 
@@ -215,8 +248,13 @@ function renderCourses() {
       </div>
     `;
   });
+
+  renderCalendar();
 }
 
+/* =========================
+   LOGS
+========================= */
 function renderLogs() {
   const box = document.getElementById("logs");
 
@@ -241,6 +279,7 @@ function save() {
   localStorage.setItem("profile", JSON.stringify(profile));
   localStorage.setItem("paths", JSON.stringify(paths));
   localStorage.setItem("logs", JSON.stringify(logs));
+  localStorage.setItem("calendar", JSON.stringify(calendar));
 }
 
 function renderAll() {
@@ -248,8 +287,8 @@ function renderAll() {
   renderPaths();
   renderCourses();
   renderLogs();
-  renderCalendar();
   renderPortfolio();
+  renderCalendar();
 }
 
 renderAll();
