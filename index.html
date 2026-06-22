@@ -9,47 +9,75 @@
 <body>
 
 <header>
-  <h1>🏫 Registro Formazione</h1>
-  <p>Simulazione scuola (versione locale)</p>
+  <h1>🏫 Ecosistema Educativo</h1>
 </header>
 
 <div class="container">
 
-  <!-- CORSO -->
+  <!-- IDENTITÀ -->
   <section class="card">
-    <h2>🎓 Nuovo corso</h2>
+    <h2>🧭 Identità</h2>
+
+    <input id="userName" placeholder="Nome">
+    <input id="userGoal" placeholder="Obiettivo">
+
+    <button onclick="saveProfile()">Salva profilo</button>
+
+    <div id="profile"></div>
+  </section>
+
+  <!-- PERCORSI -->
+  <section class="card">
+    <h2>🎓 Percorso educativo</h2>
+
+    <input id="pathName" placeholder="Nome percorso">
+
+    <select id="educationType">
+      <option>Scuola</option>
+      <option>Università</option>
+      <option>Master</option>
+      <option>Corso</option>
+      <option>Altro</option>
+    </select>
+
+    <button onclick="addPath()">Crea percorso</button>
+
+    <div id="paths"></div>
+  </section>
+
+  <!-- CORSI -->
+  <section class="card">
+    <h2>📚 Corsi</h2>
+
+    <select id="pathSelect"></select>
 
     <input id="courseName" placeholder="Nome corso">
     <input id="totalHours" type="number" placeholder="Ore totali">
+    <input id="tolerance" type="number" placeholder="Tolleranza %">
 
-    <button onclick="addCourse()">Crea corso</button>
+    <button onclick="addCourse()">Aggiungi corso</button>
   </section>
 
   <!-- REGISTRO -->
   <section class="card">
-    <h2>📅 Registro presenze giornaliere</h2>
+    <h2>📅 Registro</h2>
 
     <select id="courseSelect"></select>
-    <input id="hours" type="number" placeholder="Ore lezione oggi">
+    <input id="hours" type="number" placeholder="Ore">
 
-    <button onclick="present()">✔ Presente</button>
-    <button onclick="absent()">❌ Assente</button>
+    <button onclick="addLog('present')">✔ Presenza</button>
+    <button onclick="addLog('absent')">❌ Assenza</button>
   </section>
 
-  <!-- CALENDARIO -->
+  <!-- OUTPUT -->
   <section class="card">
-    <h2>📆 Calendario lezioni</h2>
-
-    <input id="eventText" placeholder="Es: Informatica 09:00-13:00">
-    <button onclick="addEvent()">Aggiungi lezione</button>
-
-    <div id="calendar"></div>
-  </section>
-
-  <!-- STATO -->
-  <section class="card">
-    <h2>📊 Stato corsi</h2>
+    <h2>📊 Corsi</h2>
     <div id="courses"></div>
+  </section>
+
+  <section class="card">
+    <h2>🧾 Log</h2>
+    <div id="logs"></div>
   </section>
 
 </div>
