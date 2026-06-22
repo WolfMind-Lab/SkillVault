@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SkillVault Pro</title>
+<title>Registro Formazione</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
-  <h1>🏫 SkillVault Pro</h1>
-  <p>Portale formazione e registro presenze</p>
+  <h1>🏫 Registro Formazione</h1>
+  <p>Simulazione scuola (versione locale)</p>
 </header>
 
 <div class="container">
 
   <!-- CORSO -->
   <section class="card">
-    <h2>🎓 Crea corso</h2>
+    <h2>🎓 Nuovo corso</h2>
 
     <input id="courseName" placeholder="Nome corso">
     <input id="totalHours" type="number" placeholder="Ore totali">
@@ -25,29 +25,28 @@
     <button onclick="addCourse()">Crea corso</button>
   </section>
 
-  <!-- REGISTRO PRESENZE -->
+  <!-- REGISTRO -->
   <section class="card">
-    <h2>📅 Registro presenze (oggi)</h2>
+    <h2>📅 Registro presenze giornaliere</h2>
 
     <select id="courseSelect"></select>
+    <input id="hours" type="number" placeholder="Ore lezione oggi">
 
-    <input id="lessonHours" type="number" placeholder="Ore lezione oggi">
-
-    <button onclick="markPresent()">✔ Segna presenza</button>
-    <button onclick="markAbsent()">❌ Segna assenza</button>
+    <button onclick="present()">✔ Presente</button>
+    <button onclick="absent()">❌ Assente</button>
   </section>
 
   <!-- CALENDARIO -->
   <section class="card">
-    <h2>📆 Calendario attività</h2>
+    <h2>📆 Calendario lezioni</h2>
 
-    <input id="eventText" placeholder="Es: Lezione informatica 09:00-13:00">
-    <button onclick="addEvent()">Aggiungi evento</button>
+    <input id="eventText" placeholder="Es: Informatica 09:00-13:00">
+    <button onclick="addEvent()">Aggiungi lezione</button>
 
     <div id="calendar"></div>
   </section>
 
-  <!-- CORSI -->
+  <!-- STATO -->
   <section class="card">
     <h2>📊 Stato corsi</h2>
     <div id="courses"></div>
