@@ -3,10 +3,10 @@ let paths = JSON.parse(localStorage.getItem("paths")) || [];
 let logs = JSON.parse(localStorage.getItem("logs")) || [];
 
 /* =========================
-   UTILITY ID
+   UTILITY SICURE
 ========================= */
-function uid() {
-  return Date.now() + Math.random().toString(16).slice(2);
+function num(v) {
+  return Number(v) || 0;
 }
 
 /* =========================
@@ -14,8 +14,8 @@ function uid() {
 ========================= */
 function saveProfile() {
   profile = {
-    name: userName.value,
-    goal: userGoal.value
+    name: userName.value || "",
+    goal: userGoal.value || ""
   };
 
   save();
@@ -23,15 +23,15 @@ function saveProfile() {
 }
 
 /* =========================
-   PATH
+   PERCORSI
 ========================= */
 function addPath() {
   if (!pathName.value) return;
 
   paths.push({
-    id: uid(),
+    id: Date.now().toString(),
     name: pathName.value,
-    type: educationType.value,
+    type: educationType.value || "Non definito",
     courses: []
   });
 
@@ -40,19 +40,19 @@ function addPath() {
 }
 
 /* =========================
-   COURSE
+   CORSI
 ========================= */
 function addCourse() {
   const path = paths.find(p => p.id === pathSelect.value);
   if (!path) return;
 
   path.courses.push({
-    id: uid(),
+    id: Date.now().toString(),
     name: courseName.value,
-    totalHours: Number(totalHours.value),
+    totalHours: num(totalHours.value),
     doneHours: 0,
     absentHours: 0,
-    tolerance: Number(tolerance.value),
+    tolerance: num(tolerance.value),
     calendar: []
   });
 
@@ -61,42 +61,21 @@ function addCourse() {
 }
 
 /* =========================
-   SELECT RENDER (SYNC SICURA)
-========================= */
-function renderSelects() {
-  pathSelect.innerHTML = "";
-  courseSelect.innerHTML = "";
-
-  paths.forEach(p => {
-    pathSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-  });
-
-  const path = paths.find(p => p.id === pathSelect.value);
-  if (!path) return;
-
-  path.courses.forEach(c => {
-    courseSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-  });
-}
-
-/* =========================
-   LOG PRESENZE
+   REGISTRO
 ========================= */
 function addLog(type) {
   const path = paths.find(p => p.id === pathSelect.value);
-  if (!path) return;
-
-  const course = path.courses.find(c => c.id === courseSelect.value);
+  const course = path?.courses.find(c => c.id === courseSelect.value);
   if (!course) return;
 
-  const h = Number(hours.value);
+  const h = num(hours.value);
   if (!h) return;
 
   if (type === "present") course.doneHours += h;
   else course.absentHours += h;
 
   logs.push({
-    id: uid(),
+    id: Date.now().toString(),
     date: new Date().toLocaleDateString(),
     type,
     hours: h,
@@ -108,17 +87,15 @@ function addLog(type) {
 }
 
 /* =========================
-   CALENDAR (VERO, PER CORSO)
+   CALENDARIO (PER CORSO)
 ========================= */
 function addEvent() {
   const path = paths.find(p => p.id === pathSelect.value);
-  if (!path) return;
-
-  const course = path.courses.find(c => c.id === courseSelect.value);
-  if (!course) return;
+  const course = path?.courses.find(c => c.id === courseSelect.value);
+  if (!course || !eventText.value) return;
 
   course.calendar.push({
-    id: uid(),
+    id: Date.now().toString(),
     text: eventText.value,
     date: new Date().toLocaleDateString()
   });
@@ -128,7 +105,7 @@ function addEvent() {
 }
 
 /* =========================
-   RENDER CALENDAR
+   CALENDARIO RENDER
 ========================= */
 function renderCalendar() {
   const path = paths.find(p => p.id === pathSelect.value);
@@ -140,6 +117,7 @@ function renderCalendar() {
     calendar.innerHTML += `
       <div class="item">
         📅 ${e.date}<br>
+        📘 ${course.name}<br>
         ${e.text}
       </div>
     `;
@@ -147,7 +125,7 @@ function renderCalendar() {
 }
 
 /* =========================
-   CV
+   CV AUTOMATICO
 ========================= */
 function generateCV() {
   cv.innerHTML = `
@@ -176,7 +154,9 @@ function renderPortfolio() {
 
   paths.forEach(p => {
     totalCourses += p.courses.length;
-    p.courses.forEach(c => totalHours += c.doneHours);
+    p.courses.forEach(c => {
+      totalHours += c.doneHours;
+    });
   });
 
   portfolio.innerHTML = `
@@ -184,18 +164,68 @@ function renderPortfolio() {
       💼 Portfolio<br><br>
       🎓 Percorsi: ${paths.length}<br>
       📚 Corsi: ${totalCourses}<br>
-      ⏱ Ore: ${totalHours}
+      ⏱ Ore completate: ${totalHours}
     </div>
   `;
 }
 
 /* =========================
-   RENDER PRINCIPALE
+   SELECT SINCRONIZZATI
 ========================= */
-function renderAll() {
-  renderSelects();
+function renderPaths() {
+  pathSelect.innerHTML = "";
+  paths.forEach(p => {
+    pathSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+  });
+
+  renderCourses();
   renderCalendar();
-  renderPortfolio();
+}
+
+function renderCourses() {
+  const path = paths.find(p => p.id === pathSelect.value);
+
+  courseSelect.innerHTML = "";
+  courses.innerHTML = "";
+
+  (path?.courses || []).forEach(c => {
+
+    courseSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+
+    const tol = c.tolerance ?? 0;
+    const maxAbs = c.totalHours * (tol / 100);
+
+    courses.innerHTML += `
+      <div class="item">
+        📘 ${c.name}<br>
+        ✅ ${c.doneHours}h / ${c.totalHours}h<br>
+        ❌ Assenze: ${c.absentHours}<br>
+        ⚖️ Tolleranza: ${tol}% (${isNaN(maxAbs) ? 0 : maxAbs}h)
+      </div>
+    `;
+  });
+
+  renderCalendar();
+}
+
+/* =========================
+   LOGS
+========================= */
+function renderLogs() {
+  logsBox.innerHTML = "";
+
+  logs.slice().reverse().forEach(l => {
+    const course = paths
+      .flatMap(p => p.courses)
+      .find(c => c.id === l.courseId);
+
+    logsBox.innerHTML += `
+      <div class="item">
+        📅 ${l.date} - ${course?.name || ""}<br>
+        ${l.type === "present" ? "✔" : "❌"} ${l.hours}h
+      </div>
+    `;
+  });
 }
 
 /* =========================
@@ -208,9 +238,17 @@ function save() {
 }
 
 /* =========================
-   CHANGE HANDLER
+   RENDER MASTER
 ========================= */
-pathSelect?.addEventListener("change", renderAll);
-courseSelect?.addEventListener("change", renderAll);
+function renderAll() {
+  renderPaths();
+  renderCourses();
+  renderLogs();
+  renderPortfolio();
+  renderCalendar();
+}
 
+/* =========================
+   INIT
+========================= */
 renderAll();
