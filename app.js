@@ -1,7 +1,7 @@
 let courses = JSON.parse(localStorage.getItem("courses")) || [];
 let events = JSON.parse(localStorage.getItem("events")) || [];
 
-/* CREA CORSO */
+/* CREAZIONE CORSO */
 function addCourse() {
   let name = document.getElementById("courseName").value;
   let total = Number(document.getElementById("totalHours").value);
@@ -16,12 +16,11 @@ function addCourse() {
   });
 
   save();
-  renderCourses();
-  renderSelect();
+  renderAll();
 }
 
-/* SELECT CORSI */
-function renderSelect() {
+/* SELECT */
+function updateSelect() {
   let select = document.getElementById("courseSelect");
   select.innerHTML = "";
 
@@ -31,29 +30,29 @@ function renderSelect() {
 }
 
 /* PRESENZA */
-function markPresent() {
+function present() {
   let id = document.getElementById("courseSelect").value;
-  let hours = Number(document.getElementById("lessonHours").value);
+  let h = Number(document.getElementById("hours").value);
 
-  if (!courses[id] || !hours) return;
+  if (!courses[id]) return;
 
-  courses[id].done += hours;
+  courses[id].done += h;
 
   save();
-  renderCourses();
+  renderAll();
 }
 
 /* ASSENZA */
-function markAbsent() {
+function absent() {
   let id = document.getElementById("courseSelect").value;
-  let hours = Number(document.getElementById("lessonHours").value);
+  let h = Number(document.getElementById("hours").value);
 
-  if (!courses[id] || !hours) return;
+  if (!courses[id]) return;
 
-  courses[id].absent += hours;
+  courses[id].absent += h;
 
   save();
-  renderCourses();
+  renderAll();
 }
 
 /* CALENDARIO */
@@ -67,40 +66,32 @@ function addEvent() {
   });
 
   save();
-  renderCalendar();
+  renderAll();
 }
 
-/* RENDER CORSI */
+/* RENDER */
 function renderCourses() {
   let box = document.getElementById("courses");
   box.innerHTML = "";
 
   courses.forEach(c => {
-
     let percent = ((c.done / c.total) * 100).toFixed(1);
-
-    let status = "🟢 In regola";
-
-    if (c.done + c.absent > c.total) {
-      status = "🔴 Superato monte ore";
-    }
 
     box.innerHTML += `
       <div class="item">
         <b>${c.name}</b><br>
-        Totale: ${c.total} ore<br>
-        Frequentate: ${c.done}<br>
+        Ore: ${c.done}/${c.total}<br>
         Assenze: ${c.absent}<br>
-        Completamento: ${percent}%<br>
-        Stato: ${status}
+        Avanzamento: ${percent}%
       </div>
     `;
   });
 }
 
-/* CALENDARIO */
 function renderCalendar() {
   let box = document.getElementById("calendar");
+  if (!box) return;
+
   box.innerHTML = "";
 
   events.forEach(e => {
@@ -119,6 +110,10 @@ function save() {
 }
 
 /* INIT */
-renderCourses();
-renderCalendar();
-renderSelect();
+function renderAll() {
+  renderCourses();
+  renderCalendar();
+  updateSelect();
+}
+
+renderAll();
