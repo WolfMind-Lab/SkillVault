@@ -1,8 +1,38 @@
+let profile = JSON.parse(localStorage.getItem("profile")) || {
+  name: "Utente",
+  goal: "Non definito"
+};
+
 let paths = JSON.parse(localStorage.getItem("paths")) || [];
 let logs = JSON.parse(localStorage.getItem("logs")) || [];
 
 /* =========================
-   CREA PERCORSO EDUCATIVO
+   IDENTITÀ EDUCATIVA
+========================= */
+function saveProfile() {
+  profile.name = document.getElementById("userName").value;
+  profile.goal = document.getElementById("userGoal").value;
+
+  localStorage.setItem("profile", JSON.stringify(profile));
+  renderProfile();
+}
+
+function renderProfile() {
+  const box = document.getElementById("profile");
+
+  if (!box) return;
+
+  box.innerHTML = `
+    <div class="item">
+      🧭 <b>Identità educativa</b><br><br>
+      👤 Nome: ${profile.name}<br>
+      🎯 Obiettivo: ${profile.goal}
+    </div>
+  `;
+}
+
+/* =========================
+   PERCORSI EDUCATIVI
 ========================= */
 function addPath() {
   const name = document.getElementById("pathName").value;
@@ -21,7 +51,7 @@ function addPath() {
 }
 
 /* =========================
-   CREA CORSO CON TOLLERANZA PERSONALIZZATA
+   CORSO CON REGOLE
 ========================= */
 function addCourse() {
   const pathId = document.getElementById("pathSelect").value;
@@ -44,7 +74,7 @@ function addCourse() {
 }
 
 /* =========================
-   PRESENZA / ASSENZA
+   REGISTRO
 ========================= */
 function addLog(type) {
   const pathId = document.getElementById("pathSelect").value;
@@ -73,14 +103,14 @@ function addLog(type) {
 }
 
 /* =========================
-   STATO CORSO
+   STATO
 ========================= */
 function getStatus(c) {
   const maxAbs = c.totalHours * (c.tolerancePercent / 100);
 
-  if (c.absentHours > maxAbs) return "🔴 ESCLUSO / NON AMMESSO";
-  if (c.absentHours > maxAbs * 0.7) return "🟡 RISCHIO";
-  return "🟢 REGOLARE";
+  if (c.absentHours > maxAbs) return "🔴 BLOCCATO";
+  if (c.absentHours > maxAbs * 0.7) return "🟡 ATTENZIONE";
+  return "🟢 OK";
 }
 
 /* =========================
@@ -89,6 +119,8 @@ function getStatus(c) {
 function renderPaths() {
   const box = document.getElementById("paths");
   const select = document.getElementById("pathSelect");
+
+  if (!box || !select) return;
 
   box.innerHTML = "";
   select.innerHTML = "";
@@ -99,7 +131,7 @@ function renderPaths() {
 
     box.innerHTML += `
       <div class="item">
-        <b>🎓 ${p.name}</b><br>
+        🎓 <b>${p.name}</b><br>
         📚 Tipo: ${p.type}<br>
         📦 Corsi: ${p.courses.length}
       </div>
@@ -114,11 +146,13 @@ function renderCourses() {
   const pathId = document.getElementById("pathSelect").value;
   const box = document.getElementById("courses");
 
+  if (!box) return;
+
   box.innerHTML = "";
 
   const courses = paths[pathId]?.courses || [];
 
-  courses.forEach((c, i) => {
+  courses.forEach(c => {
 
     const progress = c.totalHours
       ? ((c.doneHours / c.totalHours) * 100).toFixed(1)
@@ -128,7 +162,7 @@ function renderCourses() {
 
     box.innerHTML += `
       <div class="item">
-        <b>📘 ${c.name}</b><br><br>
+        📘 <b>${c.name}</b><br><br>
 
         📌 Totale: ${c.totalHours}<br>
         ✅ Frequentate: ${c.doneHours}<br>
@@ -145,7 +179,7 @@ function renderCourses() {
 }
 
 /* =========================
-   LOG REGISTRO
+   LOG
 ========================= */
 function renderLogs() {
   const box = document.getElementById("logs");
@@ -159,7 +193,8 @@ function renderLogs() {
 
     box.innerHTML += `
       <div class="item">
-        📅 ${l.date} - ${course?.name || "corso"}<br>
+        📅 ${l.date}<br>
+        📘 ${course?.name || "corso"}<br>
         ${l.type === "present" ? "✔ Presenza" : "❌ Assenza"} - ${l.hours}h
       </div>
     `;
@@ -170,11 +205,13 @@ function renderLogs() {
    SAVE + INIT
 ========================= */
 function save() {
+  localStorage.setItem("profile", JSON.stringify(profile));
   localStorage.setItem("paths", JSON.stringify(paths));
   localStorage.setItem("logs", JSON.stringify(logs));
 }
 
 function renderAll() {
+  renderProfile();
   renderPaths();
   renderCourses();
   renderLogs();
