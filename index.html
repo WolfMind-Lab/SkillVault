@@ -8,47 +8,66 @@
 </head>
 <body>
 
-<header>
-    <h1>📚 SkillVault</h1>
-    <p>Il tuo archivio personale di formazione</p>
-</header>
+<div class="app">
 
-<div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2>📚 SkillVault</h2>
 
-    <!-- FORM AGGIUNTA CORSO -->
-    <section class="card">
-        <h2>➕ Aggiungi Corso</h2>
+        <button onclick="showSection('dashboard')">📊 Dashboard</button>
+        <button onclick="showSection('courses')">🎓 Corsi</button>
+        <button onclick="showSection('calendar')">📅 Calendario</button>
+        <button onclick="showSection('docs')">📄 Documenti</button>
+    </aside>
 
-        <input id="courseName" placeholder="Nome corso">
-        <input id="hoursTotal" type="number" placeholder="Ore totali">
-        <input id="hoursDone" type="number" placeholder="Ore frequentate">
+    <!-- MAIN -->
+    <main class="main">
 
-        <button onclick="addCourse()">Salva Corso</button>
-    </section>
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section active">
+            <h1>Dashboard</h1>
+            <div id="stats"></div>
+        </section>
 
-    <!-- UPLOAD DOCUMENTO -->
-    <section class="card">
-        <h2>📤 Carica Documento (Scanner simulato)</h2>
-        <input type="file" id="fileInput">
-        <button onclick="uploadFile()">Carica</button>
-        <div id="fileList"></div>
-    </section>
+        <!-- CORSI -->
+        <section id="courses" class="section">
+            <h1>Corsi</h1>
 
-    <!-- LISTA CORSI -->
-    <section class="card">
-        <h2>📊 I tuoi corsi</h2>
-        <div id="courseList"></div>
-    </section>
+            <div class="card">
+                <input id="courseName" placeholder="Nome corso">
+                <input id="hoursTotal" type="number" placeholder="Ore totali">
+                <input id="hoursDone" type="number" placeholder="Ore frequentate">
+                <button onclick="addCourse()">Aggiungi corso</button>
+            </div>
 
-    <!-- CALENDARIO SEMPLICE -->
-    <section class="card">
-        <h2>📅 Calendario giornaliero</h2>
+            <div id="courseList"></div>
+        </section>
 
-        <input id="eventText" placeholder="Es: Corso informatica 09-13">
-        <button onclick="addEvent()">Aggiungi evento</button>
+        <!-- CALENDARIO -->
+        <section id="calendar" class="section">
+            <h1>Calendario</h1>
 
-        <div id="eventList"></div>
-    </section>
+            <div class="card">
+                <input id="eventText" placeholder="Evento (es: corso 09-13)">
+                <button onclick="addEvent()">Aggiungi evento</button>
+            </div>
+
+            <div id="eventList"></div>
+        </section>
+
+        <!-- DOCUMENTI -->
+        <section id="docs" class="section">
+            <h1>Documenti</h1>
+
+            <div class="card">
+                <input type="file" id="fileInput">
+                <button onclick="uploadFile()">Carica documento</button>
+            </div>
+
+            <div id="fileList"></div>
+        </section>
+
+    </main>
 
 </div>
 
